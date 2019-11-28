@@ -1,3 +1,5 @@
+//Written by Ricko 2019
+
 package com.example.tabletennis;
 
 import androidx.appcompat.app.AppCompatActivity;
