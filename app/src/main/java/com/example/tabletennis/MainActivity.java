@@ -275,7 +275,7 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
 
     private void openHelpDialog(){
         bt.write("hello!!");
-        debugTxt.setText("Help!");
+        debugTxt.setText("Help!!!!");
     }
 
 
