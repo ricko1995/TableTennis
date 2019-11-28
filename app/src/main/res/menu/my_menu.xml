@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:title="BluethootDevices"
+        android:id="@+id/btDevicesBtn"/>
+    <item
+        android:title="Settings"
+        android:id="@+id/settBtn"/>
+    <item
+        android:title="Help"
+        android:id="@+id/helpBtn"/>
+
+</menu>
