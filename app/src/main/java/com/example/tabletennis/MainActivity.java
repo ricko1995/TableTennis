@@ -40,6 +40,8 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
     private static final float tableMaxY = 0f;
     private static final float minV0 = 10f;
     private static final float maxV0 = 25f;
+    private static final int maxNumberOfShots = 15;
+    private static final int maxNumberOfExercises = 10;
 
     float ballViewMappedX, ballViewMappedY, deviceViewMappedX, deviceViewMappedY, spinPointerMappedX, spinPointerMappedY, v0mapped;
 
@@ -51,9 +53,9 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
     BtSend bt = new BtSend();
     int btSelectPosition = 0;
     int indexOfShot = 0;
-    ShotParameters[] shotParameters = new ShotParameters[10];
-    JSONObject shot1 = new JSONObject();
-    JSONObject exercise1 = new JSONObject();
+    ShotParameters[] shotParameters = new ShotParameters[maxNumberOfShots];
+
+    JSONObject exercise1=new JSONObject();
     JSONObject outputJson =new JSONObject();
 
     ImageView tableView, ballView, deviceView, spinCanvasView, axisView, spinPointerView;
@@ -225,15 +227,15 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
                     slideRight(linLayToAnimate);
                     indexOfShot--;
                     new Handler().postDelayed(()-> setAll(true), 100);
-                    //debugTxt5.setText(String.valueOf(indexOfShot));
+                    debugTxt2.setText(String.valueOf(indexOfShot));
                 }
             }
             public void onSwipeLeft() {
-                if(indexOfShot <9) {
+                if(indexOfShot < maxNumberOfShots-1) {
                     slideLeft(linLayToAnimate);
                     indexOfShot++;
                     new Handler().postDelayed(()-> setAll(true), 100);
-                    //debugTxt5.setText(String.valueOf(indexOfShot));
+                    debugTxt2.setText(String.valueOf(indexOfShot));
                 }
                 //Toast.makeText(getBaseContext(), "left", Toast.LENGTH_SHORT).show();
             }
@@ -372,6 +374,7 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
         if(swiping && !shotParameters[indexOfShot].isInitiated()){
             setDefault();
         }else if(swiping){
+            setJsonObjects();
             ballView.setX(map(tableMinX, tableMaxX, tableView.getX(), tableView.getX() + tableView.getWidth(), shotParameters[indexOfShot].getBallX())-ballView.getWidth()/2f);
             ballView.setY(map(tableMinY, tableMaxY, tableView.getY(), tableView.getY() + tableView.getHeight(), shotParameters[indexOfShot].getBallY())-ballView.getHeight()/2f);
             deviceView.setX(map(tableMinX, tableMaxX, tableView.getX(), tableView.getX() + tableView.getWidth(),shotParameters[indexOfShot].getDeviceX())-deviceView.getWidth()/2f);
@@ -388,7 +391,6 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
             spinPointerMappedY = map(spinCanvasView.getY(), spinCanvasView.getY() + spinCanvasView.getHeight() - spinPointerView.getHeight(), ySpinMin, ySpinMax, spinPointerView.getY());
             v0mapped = map(0f, speedSeekBar.getMax(), minV0, maxV0, speedSeekBar.getProgress());
 
-            setJsonObjects();
             setAxisRot();
         } else {
             ballViewMappedX = map(tableView.getX(), tableView.getX() + tableView.getWidth(), tableMinX, tableMaxX, ballView.getX() + ballView.getWidth() / 2f);
@@ -399,7 +401,6 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
             spinPointerMappedY = map(spinCanvasView.getY(), spinCanvasView.getY() + spinCanvasView.getHeight() - spinPointerView.getHeight(), ySpinMin, ySpinMax, spinPointerView.getY());
             v0mapped = map(0f, speedSeekBar.getMax(), minV0, maxV0, speedSeekBar.getProgress());
 
-            setJsonObjects();
             setAxisRot();
 
             shotParameters[indexOfShot].setBallX(ballViewMappedX);
@@ -409,22 +410,33 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
             shotParameters[indexOfShot].setSpinX(spinPointerMappedX);
             shotParameters[indexOfShot].setSpinY(spinPointerMappedY);
             shotParameters[indexOfShot].setV0(v0mapped);
+            setJsonObjects();
         }
     }
 
     void setJsonObjects(){
+        for(int i=0;i<maxNumberOfShots;i++){
+            if(shotParameters[i].isInitiated()){
+                try {
+                    JSONObject shot =new JSONObject();
+                    shot.put("v1", (int) shotParameters[i].v1Speed());
+                    shot.put("v2", (int) shotParameters[i].v2Speed());
+                    shot.put("v3", (int) shotParameters[i].v3Speed());
+                    shot.put("alpha", (int) shotParameters[i].alphaAngle());
+                    shot.put("phi", (int) shotParameters[i].phiAngle());
+                    exercise1.put(String.format("shot%s",String.valueOf(i)), shot);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            else{break;}
+        }
         try {
-            shot1.put("v1", (int) shotParameters[0].v1Speed());
-            shot1.put("v2", (int) shotParameters[0].v2Speed());
-            shot1.put("v3", (int) shotParameters[0].v3Speed());
-            shot1.put("alpha", (int) shotParameters[0].alphaAngle());
-            shot1.put("phi", (int) shotParameters[0].phiAngle());
-            exercise1.put("shot1", shot1);
             outputJson.put("exercise1", exercise1);
-            debugTxt4.setText( outputJson.toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        debugTxt3.setText(outputJson.toString());
     }
 
     void  setAxisRot(){

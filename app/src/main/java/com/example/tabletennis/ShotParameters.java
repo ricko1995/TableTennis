@@ -4,7 +4,7 @@ class ShotParameters {
 
     private float ballX, ballY, deviceX, deviceY, spinX, spinY, v0, d;
     private boolean init;
-    private final static float a = 0.2f;
+    private final static float a = 0.02f;
     private final static float b = 0.0173f;
     private final static float c = 0.1f;
     private final static float g = 9.81f;
@@ -122,6 +122,7 @@ class ShotParameters {
     void setV0(float v0) {
         this.v0 = v0;
     }
+
 
     int map(float xMinA, float xMaxA, float xMinB, float xMaxB, float xA){
         int xb;
