@@ -26,6 +26,8 @@ import android.widget.TextView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Random;
+
 public class MainActivity extends AppCompatActivity implements BtDevicesDialog.SelectedDeviceListener {
 
     private static final float xSpinMin = -25f;
@@ -343,10 +345,6 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
         bt.run(this, (rcString, handel) -> handel.runOnUiThread(() -> {}));
         shotParameters[0].setSpinX(spinPointerView.getX());
         shotParameters[0].setSpinY(spinPointerView.getY());
-        float v1 = shotParameters[0].v1Speed();
-        float v2 = shotParameters[0].v2Speed();
-        float v3 = shotParameters[0].v3Speed();
-        //bt.write(String.format("{\"vUp\":%s,\"vRight\":%s,\"vLeft\":%s}\n", String.valueOf(v1), String.valueOf(v2), String.valueOf(v3)));
     }
 
     void setDefault(){
@@ -361,8 +359,13 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
         spinPointerView.setRotation(0);
 
 
-        shotParameters[indexOfShot] = new ShotParameters(2.41f, 0.7625f, 0.33f, 0.7625f, 0f, 0f, 10f, true);
-
+        shotParameters[indexOfShot] = new ShotParameters(
+                map(0f, 1f, 1.4f, 2.6f, new Random().nextFloat()),
+                map(0f, 1f, 0.2f, 1.5f, new Random().nextFloat()), 0.33f, 0.7625f,
+                map(0f, 1f, xSpinMin, xSpinMax, new Random().nextFloat()),
+                map(0f, 1f, ySpinMin, ySpinMax, new Random().nextFloat()),
+                map(0f, 1f, minV0, maxV0, new Random().nextFloat()), true);
+        setAll(true);
     }
 
     void setAll(boolean swiping){
