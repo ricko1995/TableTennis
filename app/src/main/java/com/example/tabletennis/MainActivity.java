@@ -17,10 +17,14 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.TranslateAnimation;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity implements BtDevicesDialog.SelectedDeviceListener {
 
@@ -40,11 +44,15 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
     int axisRotDeg;
 
     TextView debugTxt1, debugTxt2, debugTxt3, debugTxt4, debugTxt5;
+    Button sendBtn;
     String macAddressLoc = "";
     BtSend bt = new BtSend();
     int btSelectPosition = 0;
     int indexOfShot = 0;
     ShotParameters[] shotParameters = new ShotParameters[10];
+    JSONObject shot1 = new JSONObject();
+    JSONObject exercise1 = new JSONObject();
+    JSONObject outputJson =new JSONObject();
 
     ImageView tableView, ballView, deviceView, spinCanvasView, axisView, spinPointerView;
     SeekBar speedSeekBar;
@@ -73,6 +81,12 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
         axisView = findViewById(R.id.axisImageView);
         spinPointerView = findViewById(R.id.spinPointerImageView);
         speedSeekBar = findViewById(R.id.speedSeekBar);
+        sendBtn = findViewById(R.id.sendBtn);
+
+        sendBtn.setOnClickListener(v-> {
+            openBtSocket();
+            bt.write(outputJson.toString());
+        });
 
         speedSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -179,6 +193,8 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
             if (y2_lim > b)
                 b = (float) y2_lim;
 
+
+
             spinPointerView.setX(a);
             spinPointerView.setY(b);
 
@@ -192,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
 
             setAll(false);
             debugTxt3.setText(String.valueOf(spinPointerMappedX));
-            debugTxt4.setText(String.valueOf(spinPointerMappedY));
+            //debugTxt4.setText(String.valueOf(spinPointerMappedY));
             return true;
         });
 
@@ -207,7 +223,7 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
                     slideRight(linLayToAnimate);
                     indexOfShot--;
                     new Handler().postDelayed(()-> setAll(true), 100);
-                    debugTxt5.setText(String.valueOf(indexOfShot));
+                    //debugTxt5.setText(String.valueOf(indexOfShot));
                 }
             }
             public void onSwipeLeft() {
@@ -215,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
                     slideLeft(linLayToAnimate);
                     indexOfShot++;
                     new Handler().postDelayed(()-> setAll(true), 100);
-                    debugTxt5.setText(String.valueOf(indexOfShot));
+                    //debugTxt5.setText(String.valueOf(indexOfShot));
                 }
                 //Toast.makeText(getBaseContext(), "left", Toast.LENGTH_SHORT).show();
             }
@@ -267,7 +283,8 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
                 0,  // fromYDelta
                 0);                // toYDelta
         animate.setDuration(500);
-        view.setAnimation(animate);
+        animate.setFillAfter(true);
+        view.startAnimation(animate);
 
 
 
@@ -306,11 +323,10 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
 
     private void openSettingsDialog(){
         debugTxt1.setText("Settings");
-        openBtSocket();
+
     }
 
     private void openHelpDialog(){
-        bt.write("hello!!");
         debugTxt1.setText(String.valueOf(shotParameters[1].isInitiated()));
     }
 
@@ -330,7 +346,7 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
         float v1 = shotParameters[0].v1Speed();
         float v2 = shotParameters[0].v2Speed();
         float v3 = shotParameters[0].v3Speed();
-        bt.write(String.format("{\"vUp\":%s,\"vRight\":%s,\"vLeft\":%s}\n", String.valueOf(v1), String.valueOf(v2), String.valueOf(v3)));
+        //bt.write(String.format("{\"vUp\":%s,\"vRight\":%s,\"vLeft\":%s}\n", String.valueOf(v1), String.valueOf(v2), String.valueOf(v3)));
     }
 
     void setDefault(){
@@ -369,6 +385,7 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
             spinPointerMappedY = map(spinCanvasView.getY(), spinCanvasView.getY() + spinCanvasView.getHeight() - spinPointerView.getHeight(), ySpinMin, ySpinMax, spinPointerView.getY());
             v0mapped = map(0f, speedSeekBar.getMax(), minV0, maxV0, speedSeekBar.getProgress());
 
+            setJsonObjects();
             setAxisRot();
         } else {
             ballViewMappedX = map(tableView.getX(), tableView.getX() + tableView.getWidth(), tableMinX, tableMaxX, ballView.getX() + ballView.getWidth() / 2f);
@@ -379,6 +396,7 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
             spinPointerMappedY = map(spinCanvasView.getY(), spinCanvasView.getY() + spinCanvasView.getHeight() - spinPointerView.getHeight(), ySpinMin, ySpinMax, spinPointerView.getY());
             v0mapped = map(0f, speedSeekBar.getMax(), minV0, maxV0, speedSeekBar.getProgress());
 
+            setJsonObjects();
             setAxisRot();
 
             shotParameters[indexOfShot].setBallX(ballViewMappedX);
@@ -388,6 +406,21 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
             shotParameters[indexOfShot].setSpinX(spinPointerMappedX);
             shotParameters[indexOfShot].setSpinY(spinPointerMappedY);
             shotParameters[indexOfShot].setV0(v0mapped);
+        }
+    }
+
+    void setJsonObjects(){
+        try {
+            shot1.put("v1", (int) shotParameters[0].v1Speed());
+            shot1.put("v2", (int) shotParameters[0].v2Speed());
+            shot1.put("v3", (int) shotParameters[0].v3Speed());
+            shot1.put("alpha", (int) shotParameters[0].alphaAngle());
+            shot1.put("phi", (int) shotParameters[0].phiAngle());
+            exercise1.put("shot1", shot1);
+            outputJson.put("exercise1", exercise1);
+            debugTxt4.setText( outputJson.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 

@@ -114,14 +114,16 @@
             </RelativeLayout>
 
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0"
-                android:id="@+id/debugText5"/>
+
+
 
         </LinearLayout>
     </RelativeLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0"
+        android:id="@+id/debugText5"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -143,6 +145,11 @@
         android:layout_height="wrap_content"
         android:text="text"
         android:id="@+id/debugText4"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Send"
+        android:id="@+id/sendBtn"/>
 
 
 

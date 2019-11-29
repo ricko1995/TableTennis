@@ -9,6 +9,10 @@ class ShotParameters {
     private final static float c = 0.1f;
     private final static float g = 9.81f;
     private final static float h0 = 0.25f;
+    private final static float vMin = 0f;
+    private final static float vMax = 25f;
+    private final static int PWMmin = 0;
+    private final static int PWMmax = 180;
 
     ShotParameters(float ballX, float ballY, float deviceX, float deviceY, float spinX, float spinY, float v0, boolean init) {
         this.ballX = ballX;
@@ -32,32 +36,28 @@ class ShotParameters {
     float v1Speed(){
         float v1;
         v1 = this.v0 + a*this.spinY;
-        return v1;
+        return map(vMin,vMax, PWMmin, PWMmax, v1);
     }
 
     float v2Speed(){
         float v2;
         v2 = this.v0 + b*this.spinX - c*this.spinY;
-        return v2;
+        return map(vMin,vMax, PWMmin, PWMmax, v2);
     }
 
     float v3Speed(){
         float v3;
         v3 = this.v0 - b*this.spinX - c*this.spinY;
-        return v3;
+        return map(vMin,vMax, PWMmin, PWMmax, v3);
     }
 
     float phiAngle(){
-        float phi;
-        phi = (float) Math.atan((this.ballX-this.deviceX)/(this.ballY-this.deviceY));
-        return phi;
+        return  (float) Math.atan((this.ballX-this.deviceX)/(this.ballY-this.deviceY));
     }
 
     float alphaAngle(){
-        float alpha;
-        alpha =  2f* (float) (Math.atan((d-Math.sqrt(d*d+h0*h0-(g*d*d/(2f*v0))*(g*d*d/(2f*v0)))))/
+        return  2f* (float) (Math.atan((d-Math.sqrt(d*d+h0*h0-(g*d*d/(2f*v0))*(g*d*d/(2f*v0)))))/
                 (h0+(g*d*d/(2f*v0))));
-        return alpha;
     }
 
     boolean isInitiated(){
@@ -121,5 +121,11 @@ class ShotParameters {
 
     void setV0(float v0) {
         this.v0 = v0;
+    }
+
+    int map(float xMinA, float xMaxA, float xMinB, float xMaxB, float xA){
+        int xb;
+        xb=(int)((xMaxB-xMinB)*(xA-xMinA)/(xMaxA-xMinA)+xMinB);
+        return xb;
     }
 }
