@@ -31,8 +31,11 @@
                     app:srcCompat="@drawable/table"
                     android:adjustViewBounds="true"
                     android:scaleType="fitCenter"/>
-
             </RelativeLayout>
+            <SeekBar
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:visibility="invisible"/>
             <RelativeLayout
                 android:layout_width="150dp"
                 android:layout_height="150dp">
@@ -41,13 +44,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/spin_ball"/>
-
-                <ImageView
-
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="10dp"
-                    android:src="@drawable/axis_removebg"/>
 
             </RelativeLayout>
 
@@ -60,8 +56,7 @@
             android:orientation="vertical"
             android:layout_gravity="top"
             android:gravity="top"
-            android:padding="10dp"
-            android:visibility="invisible">
+            android:padding="10dp">
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -88,7 +83,10 @@
                     android:src="@drawable/ping_pong_ball" />
 
             </RelativeLayout>
-
+            <SeekBar
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:id="@+id/speedSeekBar" />
 
 
             <RelativeLayout
@@ -115,16 +113,36 @@
 
             </RelativeLayout>
 
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="text"
-                android:id="@+id/debugText"/>
+                android:text="0"
+                android:id="@+id/debugText5"/>
 
         </LinearLayout>
     </RelativeLayout>
 
-
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="text"
+        android:id="@+id/debugText1"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="text"
+        android:id="@+id/debugText2"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="text"
+        android:id="@+id/debugText3"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="text"
+        android:id="@+id/debugText4"/>
 
 
 

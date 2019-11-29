@@ -5,9 +5,6 @@ package com.example.tabletennis;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
-import android.bluetooth.BluetoothDevice;
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
@@ -22,19 +19,35 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements BtDevicesDialog.SelectedDeviceListener {
 
-    TextView debugTxt;
+    private static final float xSpinMin = -25f;
+    private static final float xSpinMax = -xSpinMin;
+    private static final float ySpinMin = 145f;
+    private static final float ySpinMax = -ySpinMin;
+    private static final float tableMinX = 0f;
+    private static final float tableMaxX = 2.74f;
+    private static final float tableMinY = 1.525f;
+    private static final float tableMaxY = 0f;
+    private static final float minV0 = 10f;
+    private static final float maxV0 = 25f;
+
+    float ballViewMappedX, ballViewMappedY, deviceViewMappedX, deviceViewMappedY, spinPointerMappedX, spinPointerMappedY, v0mapped;
+
+    int axisRotDeg;
+
+    TextView debugTxt1, debugTxt2, debugTxt3, debugTxt4, debugTxt5;
     String macAddressLoc = "";
     BtSend bt = new BtSend();
-    int position = 0;
-    int exerciseCount = 1;
-    ShotParameters shotParameters;
+    int btSelectPosition = 0;
+    int indexOfShot = 0;
+    ShotParameters[] shotParameters = new ShotParameters[10];
 
     ImageView tableView, ballView, deviceView, spinCanvasView, axisView, spinPointerView;
+    SeekBar speedSeekBar;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -42,23 +55,43 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        debugTxt1 = findViewById(R.id.debugText1);
+        debugTxt2 = findViewById(R.id.debugText2);
+        debugTxt3 = findViewById(R.id.debugText3);
+        debugTxt4 = findViewById(R.id.debugText4);
+        debugTxt5 = findViewById(R.id.debugText5);
+
+
+        for (int i = 0; i<shotParameters.length; i++){
+            shotParameters[i] = new ShotParameters(0,0,0,0,0,0,0, false);
+        }
+
         tableView = findViewById(R.id.tableImageView);
         ballView = findViewById(R.id.ballImageVIew);
         deviceView = findViewById(R.id.deviceImageView);
         spinCanvasView = findViewById(R.id.spinImageView);
         axisView = findViewById(R.id.axisImageView);
         spinPointerView = findViewById(R.id.spinPointerImageView);
+        speedSeekBar = findViewById(R.id.speedSeekBar);
 
-        new Handler().postDelayed(()->{
-            ballView.setX(tableView.getX()+tableView.getWidth()-ballView.getWidth()*2f);
-            ballView.setY(tableView.getY()+tableView.getHeight()/2f-ballView.getHeight()/2f);
-            deviceView.setX(tableView.getX()+deviceView.getWidth());
-            deviceView.setY(tableView.getY()+tableView.getHeight()/2f-deviceView.getHeight()/2f);
-            spinPointerView.setX(spinCanvasView.getX()+spinCanvasView.getWidth()/2f-spinPointerView.getWidth()/2f);
-            spinPointerView.setY(spinCanvasView.getY()+spinCanvasView.getHeight()/2f-spinPointerView.getHeight()/2f);
-            debugTxt.setText(String.valueOf(exerciseCount));
-            shotParameters = new ShotParameters(ballView.getX(), ballView.getY(), deviceView.getX(), deviceView.getY(), spinPointerView.getX(), spinPointerView.getY(), 15f);
-        },100);
+        speedSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                setAll(false);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        new Handler().postDelayed(this::setDefault,100);
 
         tableView.setOnTouchListener((v, event) -> {
 
@@ -116,6 +149,10 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
                     ballView.setX(ballView.getX()+200);
                 }
             }
+
+            setAll(false);
+            debugTxt1.setText(String.valueOf(deviceViewMappedX));
+            debugTxt2.setText(String.valueOf(deviceViewMappedY));
             return true;
         });
 
@@ -145,42 +182,41 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
             spinPointerView.setX(a);
             spinPointerView.setY(b);
 
-            float x_lok = (float) map(0, spinCanvasView.getWidth() - spinPointerView.getWidth(),
+            float x_lok = map(0, spinCanvasView.getWidth() - spinPointerView.getWidth(),
                     -spinCanvasView.getWidth()/2f + spinPointerView.getWidth()/2f,
                     spinCanvasView.getWidth()/2f - spinPointerView.getWidth()/2f, a);
-            float y_lok = (float) map(0, spinCanvasView.getHeight() - spinPointerView.getHeight(),
+            float y_lok =  map(0, spinCanvasView.getHeight() - spinPointerView.getHeight(),
                     -spinCanvasView.getHeight()/2f + spinPointerView.getHeight()/2f,
                     spinCanvasView.getHeight()/2f - spinPointerView.getHeight()/2f, b);
-            int axisRotDeg = (int) (Math.atan2(y_lok, x_lok)*180/Math.PI);
-            axisView.setRotation(axisRotDeg);
-            spinPointerView.setRotation(axisRotDeg);
-            debugTxt.setText(String.valueOf(x_lok));
+            axisRotDeg = (int) (Math.atan2(y_lok, x_lok)*180/Math.PI);
 
+            setAll(false);
+            debugTxt3.setText(String.valueOf(spinPointerMappedX));
+            debugTxt4.setText(String.valueOf(spinPointerMappedY));
             return true;
         });
 
 
-        debugTxt = findViewById(R.id.debugText);
+
         LinearLayout mainLayout = findViewById(R.id.mainLayout);
         LinearLayout linLayToAnimate = findViewById(R.id.linLayToAnimate);
-        LinearLayout linLayToFade = findViewById(R.id.linLayToFade);
 
         mainLayout.setOnTouchListener(new OnSwipeTouchListener(this){
             public void onSwipeRight() {
-                if(exerciseCount>1){
+                if(indexOfShot >0){
                     slideRight(linLayToAnimate);
-                    exerciseCount--;
-                    debugTxt.setText(String.valueOf(exerciseCount));
-
-                    //FadeOutAnimation(linLayToFade);
-                    //Toast.makeText(getBaseContext(), "right", Toast.LENGTH_SHORT).show();
+                    indexOfShot--;
+                    new Handler().postDelayed(()-> setAll(true), 100);
+                    debugTxt5.setText(String.valueOf(indexOfShot));
                 }
             }
             public void onSwipeLeft() {
-                slideLeft(linLayToAnimate);
-                exerciseCount++;
-                debugTxt.setText(String.valueOf(exerciseCount));
-
+                if(indexOfShot <9) {
+                    slideLeft(linLayToAnimate);
+                    indexOfShot++;
+                    new Handler().postDelayed(()-> setAll(true), 100);
+                    debugTxt5.setText(String.valueOf(indexOfShot));
+                }
                 //Toast.makeText(getBaseContext(), "left", Toast.LENGTH_SHORT).show();
             }
         });
@@ -224,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
     }
 
     public void slideRight(View view){
-        view.setVisibility(View.VISIBLE);
+        //view.setVisibility(View.VISIBLE);
         TranslateAnimation animate = new TranslateAnimation(
                 -view.getWidth(),                 // fromXDelta
                 0,                 // toXDelta
@@ -251,7 +287,7 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
         animation.addAnimation(fadeOut);
         view.setAnimation(animation);
     }
-    // slide the view from its current position to below itself
+
     public void slideLeft(View view){
         TranslateAnimation animate = new TranslateAnimation(
                 view.getWidth(),                 // fromXDelta
@@ -264,42 +300,112 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
     }
 
     private void openBtDeviceDialog(){
-        BtDevicesDialog btDevicesDialog = new BtDevicesDialog(position);
+        BtDevicesDialog btDevicesDialog = new BtDevicesDialog(btSelectPosition);
         btDevicesDialog.show(getSupportFragmentManager(), "btDeviceDialog");
     }
 
     private void openSettingsDialog(){
-        debugTxt.setText("Settings");
+        debugTxt1.setText("Settings");
         openBtSocket();
     }
 
     private void openHelpDialog(){
         bt.write("hello!!");
-        debugTxt.setText("Help!!!!");
+        debugTxt1.setText(String.valueOf(shotParameters[1].isInitiated()));
     }
 
 
     @Override
     public void onConfirmedBtDeviceSelected(int pos, String deviceName, String macAddress) {
-        position = pos;
+        btSelectPosition = pos;
         macAddressLoc = macAddress;
-        debugTxt.setText(String.valueOf(pos));
+        debugTxt1.setText(String.valueOf(pos));
     }
 
      void openBtSocket(){
         bt.init(macAddressLoc);
         bt.run(this, (rcString, handel) -> handel.runOnUiThread(() -> {}));
-        shotParameters.setSpinX(spinPointerView.getX());
-        shotParameters.setSpinY(spinPointerView.getY());
-        float v1 = shotParameters.v1Speed();
-        float v2 = shotParameters.v2Speed();
-        float v3 = shotParameters.v3Speed();
+        shotParameters[0].setSpinX(spinPointerView.getX());
+        shotParameters[0].setSpinY(spinPointerView.getY());
+        float v1 = shotParameters[0].v1Speed();
+        float v2 = shotParameters[0].v2Speed();
+        float v3 = shotParameters[0].v3Speed();
         bt.write(String.format("{\"vUp\":%s,\"vRight\":%s,\"vLeft\":%s}\n", String.valueOf(v1), String.valueOf(v2), String.valueOf(v3)));
     }
 
-    public double map(double xamin, double xamax, double xbmin, double xbmax, double xa){
-        double xb;
-        xb=(xbmax-xbmin)*(xa-xamin)/(xamax-xamin)+xbmin;
+    void setDefault(){
+        ballView.setX(tableView.getX()+tableView.getWidth()-ballView.getWidth()*2f);
+        ballView.setY(tableView.getY()+tableView.getHeight()/2f-ballView.getHeight()/2f);
+        deviceView.setX(tableView.getX()+deviceView.getWidth());
+        deviceView.setY(tableView.getY()+tableView.getHeight()/2f-deviceView.getHeight()/2f);
+        spinPointerView.setX(spinCanvasView.getX()+spinCanvasView.getWidth()/2f-spinPointerView.getWidth()/2f);
+        spinPointerView.setY(spinCanvasView.getY()+spinCanvasView.getHeight()/2f-spinPointerView.getHeight()/2f);
+        speedSeekBar.setProgress(0);
+        axisView.setRotation(0);
+        spinPointerView.setRotation(0);
+
+
+        shotParameters[indexOfShot] = new ShotParameters(2.41f, 0.7625f, 0.33f, 0.7625f, 0f, 0f, 10f, true);
+
+    }
+
+    void setAll(boolean swiping){
+        if(swiping && !shotParameters[indexOfShot].isInitiated()){
+            setDefault();
+        }else if(swiping){
+            ballView.setX(map(tableMinX, tableMaxX, tableView.getX(), tableView.getX() + tableView.getWidth(), shotParameters[indexOfShot].getBallX())-ballView.getWidth()/2f);
+            ballView.setY(map(tableMinY, tableMaxY, tableView.getY(), tableView.getY() + tableView.getHeight(), shotParameters[indexOfShot].getBallY())-ballView.getHeight()/2f);
+            deviceView.setX(map(tableMinX, tableMaxX, tableView.getX(), tableView.getX() + tableView.getWidth(),shotParameters[indexOfShot].getDeviceX())-deviceView.getWidth()/2f);
+            deviceView.setY(map(tableMinY, tableMaxY, tableView.getY(), tableView.getY() + tableView.getHeight(),shotParameters[indexOfShot].getDeviceY())-deviceView.getHeight()/2f);
+            spinPointerView.setX(map(xSpinMin, xSpinMax, spinCanvasView.getX(), spinCanvasView.getX() + spinCanvasView.getWidth() - spinPointerView.getWidth(),shotParameters[indexOfShot].getSpinX()));
+            spinPointerView.setY(map(ySpinMin, ySpinMax, spinCanvasView.getY(), spinCanvasView.getY() + spinCanvasView.getHeight() - spinPointerView.getHeight(), shotParameters[indexOfShot].getSpinY()));
+            speedSeekBar.setProgress((int) map(minV0, maxV0, 0f, speedSeekBar.getMax(), shotParameters[indexOfShot].getV0()));
+
+            ballViewMappedX = map(tableView.getX(), tableView.getX() + tableView.getWidth(), tableMinX, tableMaxX, ballView.getX() + ballView.getWidth() / 2f);
+            ballViewMappedY = map(tableView.getY(), tableView.getY() + tableView.getHeight(), tableMinY, tableMaxY, ballView.getY() + ballView.getHeight() / 2f);
+            deviceViewMappedX = map(tableView.getX(), tableView.getX() + tableView.getWidth(), tableMinX, tableMaxX, deviceView.getX() + deviceView.getWidth() / 2f);
+            deviceViewMappedY = map(tableView.getY(), tableView.getY() + tableView.getHeight(), tableMinY, tableMaxY, deviceView.getY() + deviceView.getHeight() / 2f);
+            spinPointerMappedX = map(spinCanvasView.getX(), spinCanvasView.getX() + spinCanvasView.getWidth() - spinPointerView.getWidth(), xSpinMin, xSpinMax, spinPointerView.getX());
+            spinPointerMappedY = map(spinCanvasView.getY(), spinCanvasView.getY() + spinCanvasView.getHeight() - spinPointerView.getHeight(), ySpinMin, ySpinMax, spinPointerView.getY());
+            v0mapped = map(0f, speedSeekBar.getMax(), minV0, maxV0, speedSeekBar.getProgress());
+
+            setAxisRot();
+        } else {
+            ballViewMappedX = map(tableView.getX(), tableView.getX() + tableView.getWidth(), tableMinX, tableMaxX, ballView.getX() + ballView.getWidth() / 2f);
+            ballViewMappedY = map(tableView.getY(), tableView.getY() + tableView.getHeight(), tableMinY, tableMaxY, ballView.getY() + ballView.getHeight() / 2f);
+            deviceViewMappedX = map(tableView.getX(), tableView.getX() + tableView.getWidth(), tableMinX, tableMaxX, deviceView.getX() + deviceView.getWidth() / 2f);
+            deviceViewMappedY = map(tableView.getY(), tableView.getY() + tableView.getHeight(), tableMinY, tableMaxY, deviceView.getY() + deviceView.getHeight() / 2f);
+            spinPointerMappedX = map(spinCanvasView.getX(), spinCanvasView.getX() + spinCanvasView.getWidth() - spinPointerView.getWidth(), xSpinMin, xSpinMax, spinPointerView.getX());
+            spinPointerMappedY = map(spinCanvasView.getY(), spinCanvasView.getY() + spinCanvasView.getHeight() - spinPointerView.getHeight(), ySpinMin, ySpinMax, spinPointerView.getY());
+            v0mapped = map(0f, speedSeekBar.getMax(), minV0, maxV0, speedSeekBar.getProgress());
+
+            setAxisRot();
+
+            shotParameters[indexOfShot].setBallX(ballViewMappedX);
+            shotParameters[indexOfShot].setBallY(ballViewMappedY);
+            shotParameters[indexOfShot].setDeviceX(deviceViewMappedX);
+            shotParameters[indexOfShot].setDeviceY(deviceViewMappedY);
+            shotParameters[indexOfShot].setSpinX(spinPointerMappedX);
+            shotParameters[indexOfShot].setSpinY(spinPointerMappedY);
+            shotParameters[indexOfShot].setV0(v0mapped);
+        }
+    }
+
+    void  setAxisRot(){
+        float x_lok = map(0, spinCanvasView.getWidth() - spinPointerView.getWidth(),
+                -spinCanvasView.getWidth()/2f + spinPointerView.getWidth()/2f,
+                spinCanvasView.getWidth()/2f - spinPointerView.getWidth()/2f, spinPointerView.getX()+spinPointerView.getWidth()/2f);
+        float y_lok =  map(0, spinCanvasView.getHeight() - spinPointerView.getHeight(),
+                -spinCanvasView.getHeight()/2f + spinPointerView.getHeight()/2f,
+                spinCanvasView.getHeight()/2f - spinPointerView.getHeight()/2f, spinPointerView.getY()+spinPointerView.getHeight()/2f);
+        axisRotDeg = (int) (Math.atan2(y_lok, x_lok)*180/Math.PI);
+        axisView.setRotation(axisRotDeg);
+        spinPointerView.setRotation(axisRotDeg);
+    }
+
+    public float map(float xMinA, float xMaxA, float xMinB, float xMaxB, float xA){
+        float xb;
+        xb=(xMaxB-xMinB)*(xA-xMinA)/(xMaxA-xMinA)+xMinB;
         return xb;
     }
 }

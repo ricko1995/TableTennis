@@ -18,9 +18,9 @@ import java.util.List;
 
 public class BtDevicesDialog extends AppCompatDialogFragment {
 
-    int position;
+    private int position;
 
-    public BtDevicesDialog(int position) {
+    BtDevicesDialog(int position) {
         this.position = position;
     }
 
