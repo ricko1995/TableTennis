@@ -19,11 +19,10 @@ class BtSend {
     private OutputStreamWriter outWrite;
     private BufferedReader inWriter;
     private static Set<BluetoothDevice> bondedDevices;
-    private static List<String> devicesNameList = new ArrayList<>();
-    private static List<String> macAddressList = new ArrayList<>();
 
     static List<String> pairedDevicesName(){
         BluetoothAdapter blueAdapter = BluetoothAdapter.getDefaultAdapter();
+        List<String> devicesNameList = new ArrayList<>();
         if(blueAdapter!=null && blueAdapter.isEnabled()) {
             bondedDevices = blueAdapter.getBondedDevices();
             for (BluetoothDevice bt : bondedDevices) {
@@ -36,6 +35,7 @@ class BtSend {
 
     static List<String> pairedDevicesMac(){
         BluetoothAdapter blueAdapter = BluetoothAdapter.getDefaultAdapter();
+        List<String> macAddressList = new ArrayList<>();
         if(blueAdapter!=null && blueAdapter.isEnabled()) {
             bondedDevices = blueAdapter.getBondedDevices();
             for (BluetoothDevice bt : bondedDevices) {

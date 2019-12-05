@@ -2,8 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:title="BluethootDevices"
-        android:id="@+id/btDevicesBtn"/>
+        android:id="@+id/btDevicesBtn"
+        android:title="Bluetooth Devices" />
     <item
         android:title="Settings"
         android:id="@+id/settBtn"/>

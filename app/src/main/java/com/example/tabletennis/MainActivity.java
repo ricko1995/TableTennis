@@ -121,12 +121,10 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
 
         sendBtn.setOnClickListener(v-> {
             setJsonObjects();
-            openBtSocket();
             bt.write(json+"\n");
         });
 
         stopBtn.setOnClickListener(v -> {
-            openBtSocket();
             debugTxt4.setText("[{\"alpha\":0,\"delay\":0,\"phi\":0,\"v1\":0,\"v2\":0,\"v3\":0}]");
             bt.write("[{\"alpha\":0,\"delay\":0,\"phi\":0,\"v1\":0,\"v2\":0,\"v3\":0}]");
         });
@@ -306,6 +304,13 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
     }
 
     @Override
+    protected void onResume()
+    {
+        super.onResume();
+        openBtSocket();
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.my_menu, menu);
         return true;
@@ -357,6 +362,7 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
     public void onConfirmedBtDeviceSelected(int pos, String deviceName, String macAddress) {
         btSelectPosition = pos;
         macAddressLoc = macAddress;
+        openBtSocket();
         debugTxt1.setText(String.valueOf(pos));
     }
 
