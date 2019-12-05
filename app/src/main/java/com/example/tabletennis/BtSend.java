@@ -94,8 +94,11 @@ class BtSend {
         Thread t = new Thread(() -> {
             while (true) {
                 try {
-                    String a = inWriter.readLine();
-                    ori.Action(a, di);
+
+                    if (inWriter != null) {
+                        String a = inWriter.readLine();
+                        ori.Action(a, di);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

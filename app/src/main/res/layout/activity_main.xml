@@ -69,6 +69,28 @@
                     app:srcCompat="@drawable/table"
                     android:adjustViewBounds="true"
                     android:scaleType="fitCenter"/>
+                <TextView
+                    android:id="@+id/currentExerciseTxt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginTop="50dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginStart="50dp"
+                    android:text="E0"
+                    android:textSize="75sp"
+                    android:alpha="0.25"/>
+                <TextView
+                    android:id="@+id/currentShotTxt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginTop="50dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginEnd="50dp"
+                    android:text="S0"
+                    android:textSize="75sp"
+                    android:alpha="0.25"/>
                 <ImageView
                     android:id="@+id/deviceImageView"
                     android:layout_width="wrap_content"
@@ -82,36 +104,71 @@
                     android:layout_height="20dp"
                     android:src="@drawable/ping_pong_ball" />
 
+
             </RelativeLayout>
             <SeekBar
                 android:layout_width="match_parent"
                 android:layout_height="35dp"
                 android:id="@+id/speedSeekBar" />
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
-            <RelativeLayout
-                android:layout_width="150dp"
-                android:layout_height="150dp">
+                <RelativeLayout
+                    android:layout_width="150dp"
+                    android:layout_height="150dp">
 
-                <ImageView
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/spin_ball"
+                        android:id="@+id/spinImageView"/>
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="10dp"
+                        android:src="@drawable/axis_removebg"
+                        android:id="@+id/axisImageView"/>
+                    <ImageView
+                        android:id="@+id/spinPointerImageView"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/spin_pointer"/>
+
+                </RelativeLayout>
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:src="@drawable/spin_ball"
-                    android:id="@+id/spinImageView"/>
+                    android:gravity="top|end"
+                    android:orientation="vertical">
 
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="10dp"
-                    android:src="@drawable/axis_removebg"
-                    android:id="@+id/axisImageView"/>
-                <ImageView
-                    android:id="@+id/spinPointerImageView"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@drawable/spin_pointer"/>
+                    <EditText
+                        android:id="@+id/delayTxt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp"
+                        android:gravity="center"
+                        android:inputType="number"
+                        android:text="10"
+                        android:textSize="50sp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="Delay \nin seconds"
+                        android:paddingEnd="8dp"
+                        android:textSize="14sp"/>
+                </LinearLayout>
 
-            </RelativeLayout>
+
+            </LinearLayout>
+
+
+
 
 
 
@@ -119,22 +176,29 @@
 
         </LinearLayout>
     </RelativeLayout>
-    <Button
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Send"
-        android:id="@+id/sendBtn"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="0"
-        android:id="@+id/debugText5"/>
+        android:orientation="horizontal">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Send"
+            android:id="@+id/sendBtn"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Stop"
+            android:id="@+id/stopBtn"/>
+    </LinearLayout>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="text"
+        android:text="0"
         android:id="@+id/debugText1"/>
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -150,6 +214,11 @@
         android:layout_height="wrap_content"
         android:text="text"
         android:id="@+id/debugText4"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="text"
+        android:id="@+id/debugText5"/>
 
 
 
