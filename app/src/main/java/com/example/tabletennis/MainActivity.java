@@ -303,6 +303,14 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
                 }
             }
         });
+
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(!macAddressLoc.equals("")) openBtSocket();
     }
 
     @Override
@@ -312,6 +320,8 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
         macAddressLoc = mPrefs.getString("macAddress", "");
         if(!macAddressLoc.equals("")) openBtSocket();
     }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
