@@ -5,6 +5,8 @@ package com.example.tabletennis;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
@@ -24,6 +26,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -35,16 +38,16 @@ import java.util.Random;
 
 public class MainActivity extends AppCompatActivity implements BtDevicesDialog.SelectedDeviceListener {
 
-    private static final float xSpinMin = -5f;
+    private static final float xSpinMin = -1f;
     private static final float xSpinMax = -xSpinMin;
-    private static final float ySpinMin = 5f;
+    private static final float ySpinMin = 1f;
     private static final float ySpinMax = -ySpinMin;
     private static final float tableMinX = 0f;
     private static final float tableMaxX = 2.74f;
     private static final float tableMinY = 1.525f;
     private static final float tableMaxY = 0f;
-    private static final float minV0 = 10f;
-    private static final float maxV0 = 22.1f;
+    private static final float minV0 = 20f;
+    private static final float maxV0 = 180f;
     private static final int maxNumberOfShots = 10;
     private static final int maxNumberOfExercises = 10;
 
@@ -67,11 +70,18 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
     ImageView tableView, ballView, deviceView, spinCanvasView, axisView, spinPointerView;
     SeekBar speedSeekBar;
 
+    SharedPreferences mPrefs;
+    SharedPreferences.Editor mEditor;
+//    nickNameMain = mPrefs.getString("nickName", "");
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mPrefs = getSharedPreferences("label", 0);
+        mEditor = mPrefs.edit();
 
         debugTxt1 = findViewById(R.id.debugText1);
         debugTxt2 = findViewById(R.id.debugText2);
@@ -126,6 +136,7 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
 
         stopBtn.setOnClickListener(v -> {
             debugTxt4.setText("[{\"alpha\":0,\"delay\":0,\"phi\":0,\"v1\":0,\"v2\":0,\"v3\":0}]");
+            debugTxt1.setText(macAddressLoc);
             bt.write("[{\"alpha\":0,\"delay\":0,\"phi\":0,\"v1\":0,\"v2\":0,\"v3\":0}]");
         });
 
@@ -297,17 +308,19 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
                 }
             }
         });
-
-
-
-
     }
 
     @Override
     protected void onResume()
     {
         super.onResume();
-        openBtSocket();
+        macAddressLoc = mPrefs.getString("macAddress", "");
+        debugTxt1.setText(macAddressLoc);
+        try {
+            //openBtSocket();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -349,7 +362,8 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
     }
 
     private void openSettingsDialog(){
-        debugTxt1.setText("Settings");
+        Intent myIntent = new Intent(this, SettingsActivity.class);
+        startActivity(myIntent);
 
     }
 
@@ -362,13 +376,14 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
     public void onConfirmedBtDeviceSelected(int pos, String deviceName, String macAddress) {
         btSelectPosition = pos;
         macAddressLoc = macAddress;
+        mEditor.putString("macAddress", macAddressLoc).apply();
         openBtSocket();
         debugTxt1.setText(String.valueOf(pos));
     }
 
      void openBtSocket(){
         bt.init(macAddressLoc);
-        bt.run(this, (rcString, handel) -> handel.runOnUiThread(() -> {}));
+        //bt.run(this, (rcString, handel) -> handel.runOnUiThread(() -> {}));
     }
 
     void setDefault(){
@@ -381,8 +396,8 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
         shotParameters[indexOfShot] = new ShotParameters(
                 map(0f, 1f, 1.4f, 2.6f, new Random().nextFloat()),
                 map(0f, 1f, 0.2f, 1.5f, new Random().nextFloat()), 0.33f, 0.7625f,
-                map(0f, 1f, -3.5f, 3.5f, new Random().nextFloat()),
-                map(0f, 1f, 3.5f, -3.5f, new Random().nextFloat()),
+                map(0f, 1f, -0.707f, 0.707f, new Random().nextFloat()),
+                map(0f, 1f, 0.707f, -0.707f, new Random().nextFloat()),
                 map(0f, 1f, minV0, maxV0, new Random().nextFloat()),
                 new Random().nextInt(10)+1, true);
 
@@ -469,5 +484,22 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
         float xb;
         xb=(xMaxB-xMinB)*(xA-xMinA)/(xMaxA-xMinA)+xMinB;
         return xb;
+    }
+
+    boolean doubleBackToExitPressedOnce = false;
+    @Override
+    public void onBackPressed() {
+        if (doubleBackToExitPressedOnce) {
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            startActivity(intent);
+            android.os.Process.killProcess(android.os.Process.myPid());
+            return;
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Please click BACK again to exit..", Toast.LENGTH_SHORT).show();
+
+        new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
     }
 }

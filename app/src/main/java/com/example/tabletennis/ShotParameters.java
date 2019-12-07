@@ -5,20 +5,12 @@ class ShotParameters {
     private float ballX, ballY, deviceX, deviceY, spinX, spinY, v0, d;
     private int delay;
     private boolean init;
-    private final static float a = 0.02f;
-    private final static float b = 0.0173f;
-    private final static float c = 0.01f;
     private final static float g = 9.81f;
     private final static float h0 = 0.25f;
-    private final static float vMin = 0f;
-    private final static float vMax = 25f;
-    private final static int minPWM = 0;
-    private final static int maxPWM = 180;
-    private final static float multiplicator = 5f;
-    private final static float multiplicatorNext = 1.17f;
-    private final static float[] motor1Coordinate = new float[]{0f,multiplicator};
-    private final static float[] motor2Coordinate = new float[]{(float) (multiplicator*Math.cos(Math.toRadians(30))), (float) (-multiplicator*Math.sin(Math.toRadians(30)))};
-    private final static float[] motor3Coordinate = new float[]{(float) (-multiplicator*Math.cos(Math.toRadians(30))), (float) (-multiplicator*Math.sin(Math.toRadians(30)))};
+    private final static float spinIntensityCoefficient = 3f; // 1<=spinIntensityCoefficient<=n  -> if 1 then its max spin
+    private final static float[] motor1Coordinate = new float[]{0f,1f};
+    private final static float[] motor2Coordinate = new float[]{(float) (Math.cos(Math.toRadians(30))), (float) (-Math.sin(Math.toRadians(30)))};
+    private final static float[] motor3Coordinate = new float[]{(float) (-Math.cos(Math.toRadians(30))), (float) (-Math.sin(Math.toRadians(30)))};
 
     ShotParameters(float ballX, float ballY, float deviceX, float deviceY, float spinX, float spinY, float v0, int delay, boolean init) {
         this.ballX = ballX;
@@ -35,30 +27,17 @@ class ShotParameters {
                 (this.deviceY -this.ballY));
     }
 
-//    v1 = v0 + 0.02f * yRot;
-//    v3 = v0 + 0.0173f * xRot - 0.01f * yRot;
-//    v2 = v0 - 0.0173f * xRot - 0.01f * yRot;
-
 
     int v1Speed(){
-        int v1;
-//        v1 = this.v0 + a*this.spinY;
-        v1 = (int) (multiplicatorNext*(this.v0 - Math.sqrt(Math.pow(spinX-motor1Coordinate[0],2)+Math.pow(spinY-motor1Coordinate[1],2))));
-        return map(vMin,vMax, minPWM, maxPWM, v1);
+        return  (int) ((this.v0 - this.v0/ spinIntensityCoefficient *Math.sqrt(Math.pow(spinX-motor1Coordinate[0],2)+Math.pow(spinY-motor1Coordinate[1],2))));
     }
 
     int v2Speed(){
-        int v2;
-//        v2 = this.v0 + b*this.spinX - c*this.spinY;
-        v2 = (int) (multiplicatorNext*(this.v0 - Math.sqrt(Math.pow(spinX-motor2Coordinate[0],2)+Math.pow(spinY-motor2Coordinate[1],2))));
-        return map(vMin,vMax, minPWM, maxPWM, v2);
+        return (int) ((this.v0 - this.v0/ spinIntensityCoefficient *Math.sqrt(Math.pow(spinX-motor2Coordinate[0],2)+Math.pow(spinY-motor2Coordinate[1],2))));
     }
 
     int v3Speed(){
-        float v3;
-//        v3 = this.v0 - b*this.spinX - c*this.spinY;
-        v3 = (int) (multiplicatorNext*(this.v0 - Math.sqrt(Math.pow(spinX-motor3Coordinate[0],2)+Math.pow(spinY-motor3Coordinate[1],2))));
-        return map(vMin,vMax, minPWM, maxPWM, v3);
+        return  (int) ((this.v0 - this.v0/ spinIntensityCoefficient *Math.sqrt(Math.pow(spinX-motor3Coordinate[0],2)+Math.pow(spinY-motor3Coordinate[1],2))));
     }
 
     float phiAngle(){
