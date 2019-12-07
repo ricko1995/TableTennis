@@ -7,7 +7,7 @@ class ShotParameters {
     private boolean init;
     private final static float g = 9.81f;
     private final static float h0 = 0.25f;
-    private final static float spinIntensityCoefficient = 3f; // 1<=spinIntensityCoefficient<=n  -> if 1 then its max spin
+    static float spinIntensityCoefficient = 3f; // 1<=spinIntensityCoefficient<=n  -> if 1 then its max spin
     private final static float[] motor1Coordinate = new float[]{0f,1f};
     private final static float[] motor2Coordinate = new float[]{(float) (Math.cos(Math.toRadians(30))), (float) (-Math.sin(Math.toRadians(30)))};
     private final static float[] motor3Coordinate = new float[]{(float) (-Math.cos(Math.toRadians(30))), (float) (-Math.sin(Math.toRadians(30)))};
@@ -29,15 +29,15 @@ class ShotParameters {
 
 
     int v1Speed(){
-        return  (int) ((this.v0 - this.v0/ spinIntensityCoefficient *Math.sqrt(Math.pow(spinX-motor1Coordinate[0],2)+Math.pow(spinY-motor1Coordinate[1],2))));
+        return  (int) ((this.v0 - this.v0/ (spinIntensityCoefficient+1) *Math.sqrt(Math.pow(spinX-motor1Coordinate[0],2)+Math.pow(spinY-motor1Coordinate[1],2))));
     }
 
     int v2Speed(){
-        return (int) ((this.v0 - this.v0/ spinIntensityCoefficient *Math.sqrt(Math.pow(spinX-motor2Coordinate[0],2)+Math.pow(spinY-motor2Coordinate[1],2))));
+        return (int) ((this.v0 - this.v0/ (spinIntensityCoefficient+1) *Math.sqrt(Math.pow(spinX-motor2Coordinate[0],2)+Math.pow(spinY-motor2Coordinate[1],2))));
     }
 
     int v3Speed(){
-        return  (int) ((this.v0 - this.v0/ spinIntensityCoefficient *Math.sqrt(Math.pow(spinX-motor3Coordinate[0],2)+Math.pow(spinY-motor3Coordinate[1],2))));
+        return  (int) ((this.v0 - this.v0/ (spinIntensityCoefficient+1) *Math.sqrt(Math.pow(spinX-motor3Coordinate[0],2)+Math.pow(spinY-motor3Coordinate[1],2))));
     }
 
     float phiAngle(){

@@ -14,29 +14,17 @@ import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
-import android.view.View;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
-import android.view.animation.DecelerateInterpolator;
-import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
-public class MainActivity extends AppCompatActivity implements BtDevicesDialog.SelectedDeviceListener {
+public class MainActivity extends AppCompatActivity implements BtDevicesDialog.SelectedDeviceListener{
 
     private static final float xSpinMin = -1f;
     private static final float xSpinMax = -xSpinMin;
@@ -46,8 +34,8 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
     private static final float tableMaxX = 2.74f;
     private static final float tableMinY = 1.525f;
     private static final float tableMaxY = 0f;
-    private static final float minV0 = 20f;
-    private static final float maxV0 = 180f;
+    static float minV0 = 20f;
+    static float maxV0 = 180f;
     private static final int maxNumberOfShots = 10;
     private static final int maxNumberOfExercises = 10;
 
@@ -136,7 +124,6 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
 
         stopBtn.setOnClickListener(v -> {
             debugTxt4.setText("[{\"alpha\":0,\"delay\":0,\"phi\":0,\"v1\":0,\"v2\":0,\"v3\":0}]");
-            debugTxt1.setText(macAddressLoc);
             bt.write("[{\"alpha\":0,\"delay\":0,\"phi\":0,\"v1\":0,\"v2\":0,\"v3\":0}]");
         });
 
@@ -159,7 +146,15 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
             }
         });
 
-        new Handler().postDelayed(this::setDefault,100);
+        new Handler().postDelayed(()->{
+            setDefault();
+            if(macAddressLoc.equals("")){
+                openBtDeviceDialog();
+            }
+            Intent myIntent = new Intent(this, SettingsActivity.class);
+            myIntent.putExtra("firstStart", true);
+            startActivity(myIntent);
+        },100);
 
         tableView.setOnTouchListener((v, event) -> {
 
@@ -311,16 +306,11 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
     }
 
     @Override
-    protected void onResume()
-    {
-        super.onResume();
+    protected void onRestart() {
+        super.onRestart();
+        importSettingsValue();
         macAddressLoc = mPrefs.getString("macAddress", "");
-        debugTxt1.setText(macAddressLoc);
-        try {
-            //openBtSocket();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        if(!macAddressLoc.equals("")) openBtSocket();
     }
 
     @Override
@@ -502,4 +492,12 @@ public class MainActivity extends AppCompatActivity implements BtDevicesDialog.S
 
         new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
     }
+
+    void importSettingsValue(){
+        minV0 = Float.valueOf(SettingsActivity.minSpeedPref.getText());
+        maxV0 = Float.valueOf(SettingsActivity.maxSpeedPref.getText());
+        ShotParameters.spinIntensityCoefficient = Float.valueOf(SettingsActivity.spinIntensityPref.getText());
+        setAll(false);
+    }
+
 }
